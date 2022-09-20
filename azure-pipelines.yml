@@ -1,20 +1,15 @@
-# HTML
-# Archive your static HTML project and save it with the build record.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - Dev
 - Prod
 
 pool: AWS-EC2-Agents
 variables:
-- group: Staging-Server-Cred
+- group: stagin-cred
 
 steps:
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.SourcesDirectory)/creative-agency-website-template'
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
@@ -30,25 +25,3 @@ steps:
   inputs:
     secureFile: 'git-lab.pem'
     retryCount: '3'
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Write your commands here
-      chmod 400 $(Agent.TempDirectory)/git-lab.pem
-      scp -o StrictHostKeyChecking=no -i $(Agent.TempDirectory)/git-lab.pem $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip $(SSH_User)@$(SSH_Host):/var/www/html
-    failOnStderr: true
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Write your commands here
-      echo "cd /var/www/html" > RemoteAppHost.sh
-      echo "unzip -o $(Build.BuildId).zip" >> RemoteAppHost.sh
-      echo "rm -f $(Build.BuildId).zip" >> RemoteAppHost.sh
-      scp -i $(Agent.TempDirectory)/git-lab.pem -o StrictHostKeyChecking=no RemoteAppHost.sh $(SSH_User)@$(SSH_Host):.
-      ssh -i $(Agent.TempDirectory)/git-lab.pem -o StrictHostKeyChecking=no $(SSH_User)@$(SSH_Host) chmod a+x RemoteAppHost.sh
-      ssh -i $(Agent.TempDirectory)/git-lab.pem -o StrictHostKeyChecking=no $(SSH_User)@$(SSH_Host) sh RemoteAppHost.sh
-
