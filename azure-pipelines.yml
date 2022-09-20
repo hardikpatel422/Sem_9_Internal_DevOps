@@ -5,6 +5,7 @@
 
 trigger:
 - Dev
+- Prod
 
 pool: AWS-EC2-Agents
 variables:
